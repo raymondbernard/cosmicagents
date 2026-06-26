@@ -13,6 +13,10 @@ from core.anthropic.stream_contracts import (
     assert_anthropic_stream_contract,
     parse_sse_text,
 )
+from core.anthropic.streaming import (
+    MIDSTREAM_RECOVERY_ATTEMPTS,
+    TruncatedProviderStreamError,
+)
 from providers.base import ProviderConfig
 from providers.nvidia_nim import NvidiaNimProvider
 from providers.transports.openai_chat.recovery import OpenAIChatRecovery
@@ -748,6 +752,81 @@ class TestStreamingExceptionHandling:
             for event in parsed
         )
         assert not any(event.event == "error" for event in parsed)
+
+    @pytest.mark.asyncio
+    async def test_recovery_collect_text_requires_finish_reason(self):
+        """Recovery collectors reject truncated OpenAI-chat continuation streams."""
+        create_stream = AsyncMock(
+            return_value=(AsyncStreamMock([_make_chunk(content="world")]), {})
+        )
+        recovery = OpenAIChatRecovery(
+            provider_name="NIM",
+            create_stream=create_stream,
+        )
+
+        with pytest.raises(TruncatedProviderStreamError):
+            await recovery.collect_text({"messages": []})
+
+        assert create_stream.await_count == MIDSTREAM_RECOVERY_ATTEMPTS
+
+    @pytest.mark.asyncio
+    async def test_recovery_collect_text_accepts_finish_reason(self):
+        """Recovery collectors return text only after the upstream terminal marker."""
+        create_stream = AsyncMock(
+            return_value=(
+                AsyncStreamMock(
+                    [
+                        _make_chunk(content="world"),
+                        _make_chunk(finish_reason="stop"),
+                    ]
+                ),
+                {},
+            )
+        )
+        recovery = OpenAIChatRecovery(
+            provider_name="NIM",
+            create_stream=create_stream,
+        )
+
+        assert await recovery.collect_text({"messages": []}) == ("world", "")
+
+    @pytest.mark.asyncio
+    async def test_truncated_recovery_stream_falls_back_to_error_tail(self):
+        """Partial recovery bytes are not converted into a successful response."""
+        provider = _make_provider()
+        request = _make_request()
+        original_text = "hello wor" + ("x" * 70_000)
+        original_stream = AsyncStreamMock([_make_chunk(content=original_text)])
+
+        with (
+            patch.object(
+                provider._client.chat.completions,
+                "create",
+                new_callable=AsyncMock,
+                return_value=original_stream,
+            ) as mock_create,
+            patch.object(
+                OpenAIChatRecovery,
+                "collect_text",
+                new_callable=AsyncMock,
+                side_effect=TruncatedProviderStreamError(
+                    "Recovery stream ended without finish_reason."
+                ),
+            ) as mock_collect,
+        ):
+            events = await _collect_stream(provider, request)
+
+        event_text = "".join(events)
+        assert mock_create.await_count == 1
+        assert mock_collect.await_count == 1
+        assert original_text in event_text
+        assert "world" not in event_text
+        assert "Provider stream ended without finish_reason." in event_text
+        assert not any(
+            event.event == "content_block_delta"
+            and event.data.get("delta", {}).get("text") == "ld"
+            for event in parse_sse_text(event_text)
+        )
 
     @pytest.mark.asyncio
     async def test_incomplete_tool_call_repair_appends_schema_valid_suffix(self):

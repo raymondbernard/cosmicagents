@@ -11,6 +11,7 @@ from core.anthropic.stream_contracts import parse_sse_text
 from core.anthropic.streaming import (
     MIDSTREAM_RECOVERY_ATTEMPTS,
     AnthropicStreamLedger,
+    TruncatedProviderStreamError,
     accept_tool_json_repair,
     continuation_suffix,
     is_retryable_stream_error,
@@ -68,7 +69,10 @@ class AnthropicMessagesRecovery:
                 ]
                 text_parts: list[str] = []
                 thinking_parts: list[str] = []
+                terminal_seen = False
                 for event in parse_sse_text("".join(chunks)):
+                    if event.event == "message_stop":
+                        terminal_seen = True
                     delta = event.data.get("delta")
                     if not isinstance(delta, dict):
                         continue
@@ -78,6 +82,10 @@ class AnthropicMessagesRecovery:
                     thinking = delta.get("thinking")
                     if isinstance(thinking, str):
                         thinking_parts.append(thinking)
+                if not terminal_seen:
+                    raise TruncatedProviderStreamError(
+                        "Recovery stream ended without message_stop."
+                    )
                 return "".join(text_parts), "".join(thinking_parts)
             except Exception as error:
                 last_error = error

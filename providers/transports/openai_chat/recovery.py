@@ -8,6 +8,7 @@ from typing import Any
 from core.anthropic.streaming import (
     MIDSTREAM_RECOVERY_ATTEMPTS,
     AnthropicStreamLedger,
+    TruncatedProviderStreamError,
     accept_tool_json_repair,
     continuation_suffix,
     is_retryable_stream_error,
@@ -38,10 +39,13 @@ class OpenAIChatRecovery:
                 stream, _ = await self._create_stream(body)
                 text_parts: list[str] = []
                 thinking_parts: list[str] = []
+                terminal_seen = False
                 async for chunk in stream:
                     if not getattr(chunk, "choices", None):
                         continue
                     choice = chunk.choices[0]
+                    if choice.finish_reason is not None:
+                        terminal_seen = True
                     delta = choice.delta
                     if delta is None:
                         continue
@@ -51,6 +55,10 @@ class OpenAIChatRecovery:
                     content = getattr(delta, "content", None)
                     if isinstance(content, str) and content:
                         text_parts.append(content)
+                if not terminal_seen:
+                    raise TruncatedProviderStreamError(
+                        "Recovery stream ended without finish_reason."
+                    )
                 return "".join(text_parts), "".join(thinking_parts)
             except Exception as error:
                 last_error = error
