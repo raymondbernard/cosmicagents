@@ -14,7 +14,7 @@ Use Claude Code CLI, Codex CLI, their VS Code extensions, JetBrains ACP, or chat
 
 Free Claude Code routes Anthropic Messages API traffic from Claude Code (CLI and VS Code extension) and OpenAI Responses API traffic from Codex (CLI and VS Code extension) to any provider. It keeps each client's protocol stable while letting you choose free, paid, or local models through the same proxy and Admin UI.
 
-[Quick Start](#quick-start) · [Providers](#choose-a-provider) · [Clients](#connect-your-client) · [Integrations](#optional-integrations) · [Development](#development)
+[Quick Start](#quick-start) · [Providers](#choose-a-provider) · [Clients](#connect-your-client) · [Integrations](#optional-integrations) · [Development](#development) · [Ollama Windows Guide](OLLAMA_WINDOWS_SETUP.md) · [Claude Code Agents Tutorial](CLAUDE_CODE_AGENTS_TUTORIAL.md)
 
 </div>
 
@@ -53,6 +53,9 @@ Free Claude Code routes Anthropic Messages API traffic from Claude Code (CLI and
 </div>
 
 ## What You Get
+
+- Windows quick-start for local Ollama usage: [OLLAMA_WINDOWS_SETUP.md](OLLAMA_WINDOWS_SETUP.md)
+- Quick tutorial for working with Claude Code agents: [CLAUDE_CODE_AGENTS_TUTORIAL.md](CLAUDE_CODE_AGENTS_TUTORIAL.md)
 
 - Drop-in proxy for Claude Code's Anthropic API calls (`/v1/messages`, `/v1/models`).
 - Drop-in proxy for Codex via the OpenAI Responses API (`/v1/responses`).
@@ -115,6 +118,8 @@ INFO:     Admin UI: http://127.0.0.1:8082/admin (local-only)
 ```
 
 Many terminals make these clickable. Use your configured `PORT` if it is not `8082`.
+
+For a simple Windows + Ollama walkthrough, see [OLLAMA_WINDOWS_SETUP.md](OLLAMA_WINDOWS_SETUP.md).
 
 ### 3. Open The Admin UI And Configure NVIDIA NIM
 
