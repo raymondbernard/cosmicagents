@@ -1,33 +1,79 @@
-# Cosmic Agents Workspace
+# Cosmic Agents
 
-This workspace is organized to support multiple projects with a consistent and scalable structure.
+A self-contained, fully local AI agent stack combining **Free Claude Code proxy** (fcc-server) with **OpenClaw** — orchestration for task intake, memory, skills, approvals, and multi-agent coordination.
 
-## Top-level layout
+## Quick Start
 
-- projects/ - individual project folders, with the starter Python sample project in place
-- shared/ - reusable assets, libraries, and common utilities
-- templates/ - starter templates for new projects, including starter-python and starter-golang
-- docs/ - documentation and planning notes
-- tools/ - helper scripts and automation
+```bat
+.\start.bat
+```
 
-## Recommended project structure
+This kills any existing services, starts fcc-server (port 8082) and the OpenClaw gateway (port 18789), then opens both dashboards in your browser.
 
-Each project should follow this pattern:
+**FCC Admin:** http://127.0.0.1:8082/admin  
+**OpenClaw Chat:** http://127.0.0.1:18789/chat  
 
-- docs/ - requirements, architecture, and notes
-- src/ - application code
-- tests/ - automated tests
-- config/ - environment and configuration files
-- scripts/ - setup and maintenance scripts
-- assets/ - images, diagrams, and other static files
-- AGENTS.md - project-specific AI agent instructions
-- CLAUDE.md - project-specific Claude instructions
+When the OpenClaw browser opens, enter the gateway token (printed by start.bat) and click **Connect**.
 
-## Suggested workflow
+## Architecture
 
-1. Create a new project in projects/
-2. Copy the structure from templates/starter-python/ for Python or templates/starter-golang/ for Go
-3. Keep shared logic in shared/
+```
+OpenClaw Chat UI
+      │
+      ▼
+OpenClaw Gateway (port 18789)
+      │
+      ├── Ollama (local, port 11434)  ← llama3.1:latest (default)
+      │
+      └── Groq API (cloud fallback)   ← llama-3.1-8b-instant / llama-3.3-70b-versatile
+```
+
+## Models
+
+| Provider | Model | Notes |
+|----------|-------|-------|
+| Ollama (local) | `llama3.1:latest` | Default — no rate limits |
+| Groq | `llama-3.1-8b-instant` | Fast cloud fallback |
+| Groq | `llama-3.3-70b-versatile` | Higher quality cloud option |
+| Groq | `moonshotai/kimi-k2-instruct` | Kimi K2 |
+
+Switch models in `~/.openclaw/openclaw.json` → `agents.defaults.model.primary`.
+
+## Key Config Files
+
+| File | Purpose |
+|------|---------|
+| `start.bat` | One-click launcher — kills, starts, opens browsers |
+| `free-claude-code/.env` | fcc-server env (Groq API key, model routing) |
+| `~/.openclaw/openclaw.json` | OpenClaw model providers, WhatsApp channel, gateway token |
+
+## WhatsApp Integration
+
+OpenClaw's WhatsApp plugin is installed. To link your number:
+1. Run `start.bat`
+2. Open OpenClaw → **Settings → Channels**
+3. Click **Show QR** and scan with WhatsApp on your phone (**Settings → Linked Devices → Link a Device**)
+
+Allowed number: `+19293617136`
+
+## Workspace Layout
+
+```
+start.bat               ← launcher
+free-claude-code/       ← fcc-server proxy (git submodule, own repo)
+projects/               ← individual project folders
+templates/              ← starter templates (Python, Go)
+tools/                  ← helper scripts
+tests/                  ← workspace-level tests
+```
+
+## Requirements
+
+- [Ollama](https://ollama.ai) with `llama3.1:latest` pulled
+- Node.js (for OpenClaw: `npm i -g openclaw`)
+- Python 3.x + uv (for fcc-server)
+- [Groq API key](https://console.groq.com) (optional cloud fallback)
+
 4. Document decisions in docs/
 5. Reuse tools/ scripts when possible
 
