@@ -1,0 +1,22 @@
+# Secrets
+*.env
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+
+# Node
+node_modules/
+*.log
+
+# Free-claude-code submodule (has its own repo)
+free-claude-code/
+
+# OS
+.DS_Store
+Thumbs.db
