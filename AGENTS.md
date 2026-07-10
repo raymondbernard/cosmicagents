@@ -2,6 +2,116 @@
 
 > This file is identical to CLAUDE.md. Keep them in sync.
 
+---
+
+## COSMIC AGENTS SYSTEM
+
+This repo is **Cosmic Agents** — a self-contained, fully local AI agent stack that combines:
+
+- **Free Claude Code proxy** (`fcc-server`) — translates Anthropic Messages API and OpenAI Responses API calls to any backend provider (Ollama, OpenRouter, Gemini, and more).
+- **OpenClaw** — orchestration layer for task intake, memory, skills, approvals, and multi-agent coordination.
+
+### Architecture
+
+```
+OpenClaw / Claude Code / Codex
+        │
+        ▼
+  fcc-server (port 8082)          ← Anthropic Messages API proxy
+        │
+        ▼
+  Ollama (port 11434)             ← local LLM (llama3.1:latest)
+```
+
+### Key File Locations (Windows)
+
+| File | Path | Purpose |
+|------|------|---------|
+| Proxy managed env | `C:\Users\<you>\.fcc\.env` | Provider, model, port, auth token |
+| Proxy launcher | `free-claude-code\start_server.ps1` | Start fcc-server with correct PATH |
+| OpenClaw dev config | `C:\Users\<you>\.openclaw-dev\openclaw.json` | OpenClaw provider + model routing |
+| OpenClaw workspace | `C:\Users\<you>\.openclaw\workspace-dev\` | Agent workspace files (SOUL.md, IDENTITY.md, etc.) |
+| Config example | `docs\openclaw-config-example.json` | Reference openclaw.json for FCC integration |
+
+### Managed Env (`~/.fcc/.env`)
+
+```env
+MODEL=ollama/llama3.1:latest
+OLLAMA_BASE_URL=http://localhost:11434
+ANTHROPIC_AUTH_TOKEN=fcc-no-auth
+PORT=8082
+```
+
+### OpenClaw Provider Config (`~/.openclaw-dev/openclaw.json`)
+
+```json
+{
+  "models": {
+    "providers": {
+      "anthropic": {
+        "api": "anthropic-messages",
+        "baseUrl": "http://127.0.0.1:8082",
+        "apiKey": "fcc-no-auth",
+        "models": [
+          { "id": "claude-opus-4-5",   "name": "Claude Opus 4.5" },
+          { "id": "claude-sonnet-4-5", "name": "Claude Sonnet 4.5" },
+          { "id": "claude-haiku-4-5",  "name": "Claude Haiku 4.5" }
+        ]
+      }
+    }
+  },
+  "gateway": {
+    "mode": "local",
+    "auth": { "mode": "token", "token": "dev-local-token" }
+  }
+}
+```
+
+> **Note:** Each entry in `models` must be an object with at minimum `id` (string) and `name` (string). Plain strings are not valid.
+
+### Starting the Stack
+
+```powershell
+# 1. Ensure Ollama is running (starts automatically on Windows after install)
+ollama list
+
+# 2. Start the proxy
+.\free-claude-code\start_server.ps1
+
+# 3. Verify health
+Invoke-RestMethod http://127.0.0.1:8082/health
+# → status: healthy
+```
+
+### Running an OpenClaw Agent Turn
+
+```powershell
+# Local embedded agent (no gateway required)
+openclaw --dev agent --local --session-id my-session --message "Your task here."
+
+# With JSON output (shows token usage, model, system prompt report)
+openclaw --dev agent --local --session-id my-session --message "Your task here." --json
+```
+
+### Verifying the Proxy Directly
+
+```powershell
+# Curl test — expects SSE stream with model response
+curl.exe -s http://127.0.0.1:8082/v1/messages `
+  -H "x-api-key: fcc-no-auth" `
+  -H "anthropic-version: 2023-06-01" `
+  -H "Content-Type: application/json" `
+  -d "@docs/openclaw-config-example.json"
+```
+
+### GitHub
+
+- Repo: `https://github.com/raymondbernard/cosmicagents`
+- Branch: `main`
+- Push: `git push origin main` (authenticated via gh CLI as `raymondbernard`)
+
+---
+
 ## CODING ENVIRONMENT
 
 - Install astral uv using "curl -LsSf https://astral.sh/uv/install.sh | sh" if not already installed and if already installed then update it to the latest version
