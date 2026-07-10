@@ -415,16 +415,7 @@ Set `FCC_CODEX_API_KEY` to the same value as `ANTHROPIC_AUTH_TOKEN` in the Admin
 
 ### 3. Claude Code in VS Code
 
-Install the [Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code). Open Settings, search for `claude-code.environmentVariables`, choose **Edit in settings.json**, and add:
-
-```json
-"claudeCode.environmentVariables": [
-  { "name": "ANTHROPIC_BASE_URL", "value": "http://localhost:8082" },
-  { "name": "ANTHROPIC_AUTH_TOKEN", "value": "freecc" },
-  { "name": "CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY", "value": "1" },
-  { "name": "CLAUDE_CODE_AUTO_COMPACT_WINDOW", "value": "190000" }
-]
-```
+Install the [Claude Code extension](https://marketplace.visualstudio.com/items?itemName=anthropic.claude-code) and follow the upstream VS Code setup guide: [Use Claude Code in VS Code](https://code.claude.com/docs/en/vs-code). Use your shared Claude Code settings file at `~/.claude/settings.json` for proxy env vars and other cross-client config.
 
 Reload the extension. If the extension shows a login screen, choose the Anthropic Console path once; the local proxy still handles model traffic after the environment variables are active.
 
@@ -476,6 +467,78 @@ Set the environment for `acp.registry.claude-acp`:
 ```
 
 Restart the IDE after changing the file.
+
+## OpenClaw Integration
+
+Run [OpenClaw](https://openclaw.ai) agents locally using Free Claude Code as the Anthropic proxy — no Anthropic API key required.
+
+### Prerequisites
+
+- Ollama installed and running with at least one model pulled:
+  ```powershell
+  ollama pull llama3.1
+  ```
+- OpenClaw CLI installed via npm:
+  ```powershell
+  npm install -g openclaw
+  ```
+
+### 1. Configure the proxy
+
+Verify `~/.fcc/.env` (Windows: `C:\Users\<you>\.fcc\.env`) contains:
+
+```env
+MODEL=ollama/llama3.1:latest
+OLLAMA_BASE_URL=http://localhost:11434
+ANTHROPIC_AUTH_TOKEN=fcc-no-auth
+PORT=8082
+```
+
+Start the proxy:
+
+```powershell
+fcc-server
+```
+
+Verify it is healthy:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:8082/health
+# status: healthy
+```
+
+### 2. Configure OpenClaw
+
+Add the anthropic provider block to `~/.openclaw-dev/openclaw.json` (use `--dev` for an isolated dev profile):
+
+```json
+{
+  "models": {
+    "providers": {
+      "anthropic": {
+        "api": "anthropic-messages",
+        "baseUrl": "http://127.0.0.1:8082",
+        "apiKey": "fcc-no-auth",
+        "models": [
+          { "id": "claude-opus-4-5",   "name": "Claude Opus 4.5" },
+          { "id": "claude-sonnet-4-5", "name": "Claude Sonnet 4.5" },
+          { "id": "claude-haiku-4-5",  "name": "Claude Haiku 4.5" }
+        ]
+      }
+    }
+  }
+}
+```
+
+### 3. Run an agent turn
+
+```powershell
+openclaw --dev agent --local --session-id my-session --message "Your task here."
+```
+
+Add `--json` for structured output including token usage and the full system prompt report.
+
+> **Note:** The `--dev` flag isolates state under `~/.openclaw-dev` and does not touch your production OpenClaw config. All Anthropic model names are routed to the `MODEL` set in `~/.fcc/.env`.
 
 ## Optional Integrations
 

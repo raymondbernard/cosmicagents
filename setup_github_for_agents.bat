@@ -4,13 +4,13 @@ setlocal
 cd /d "%~dp0"
 
 set "GITHUB_USER=%~1"
-if not defined GITHUB_USER set "GITHUB_USER=raybe"
+if not defined GITHUB_USER set "GITHUB_USER=raymondbernard"
 
 echo Configuring Git for GitHub usage...
 echo.
 
-git config --global user.name "Ray Be"
-git config --global user.email "raybe@example.com"
+git config --global user.name "Ray Bernard"
+git config --global user.email "ray.bernard@outlook.com"
 git config --global credential.helper manager-core
 
 echo Git identity and credential helper configured.

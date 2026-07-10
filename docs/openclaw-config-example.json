@@ -1,0 +1,39 @@
+{
+  "agents": {
+    "defaults": {
+      "workspace": "~/.openclaw/workspace-dev",
+      "maxConcurrent": 4,
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    }
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto"
+  },
+  "models": {
+    "providers": {
+      "anthropic": {
+        "api": "anthropic-messages",
+        "baseUrl": "http://127.0.0.1:8082",
+        "apiKey": "fcc-no-auth",
+        "models": [
+          { "id": "claude-opus-4-5",   "name": "Claude Opus 4.5" },
+          { "id": "claude-sonnet-4-5", "name": "Claude Sonnet 4.5" },
+          { "id": "claude-haiku-4-5",  "name": "Claude Haiku 4.5" }
+        ]
+      }
+    }
+  },
+  "messages": {
+    "ackReactionScope": "group-mentions"
+  },
+  "gateway": {
+    "mode": "local",
+    "auth": {
+      "mode": "token",
+      "token": "dev-local-token"
+    }
+  }
+}
