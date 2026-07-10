@@ -1,8 +1,13 @@
 <div align="center">
 
-# 🤖 Free Claude Code
+# 🚀 Cosmic Agents
 
-Use Claude Code CLI, Codex CLI, their VS Code extensions, JetBrains ACP, or chat bots through your own provider-backed proxy.
+**Cosmic Agents** combines the [Free Claude Code](https://github.com/Alishahryar1/free-claude-code) proxy with [OpenClaw](https://openclaw.ai) to give you a fully local, free AI agent stack — no Anthropic API key required.
+
+- **Free Claude Code proxy** — routes Claude Code, Codex, and OpenClaw traffic to any provider (Ollama, OpenRouter, Gemini, and more).
+- **OpenClaw** — orchestration layer for task intake, memory, skills, approvals, and multi-agent coordination.
+
+Together they form a self-contained agentic platform you can run entirely on your own hardware.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![Python 3.14](https://img.shields.io/badge/python-3.14-3776ab.svg?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/downloads/)
@@ -13,9 +18,9 @@ Use Claude Code CLI, Codex CLI, their VS Code extensions, JetBrains ACP, or chat
 [![Logging: Loguru](https://img.shields.io/badge/logging-loguru-4ecdc4.svg?style=for-the-badge)](https://github.com/Delgan/loguru)
 [![Linux smoke](https://img.shields.io/badge/Linux%20smoke-Ubuntu%20CI-2ea44f?style=for-the-badge)](.github/workflows/tests.yml)
 
-Free Claude Code routes Anthropic Messages API traffic from Claude Code (CLI and VS Code extension) and OpenAI Responses API traffic from Codex (CLI and VS Code extension) to any provider. It keeps each client's protocol stable while letting you choose free, paid, or local models through the same proxy and Admin UI.
+The Free Claude Code proxy routes Anthropic Messages API traffic from Claude Code (CLI and VS Code extension) and OpenAI Responses API traffic from Codex (CLI and VS Code extension) to any provider. It keeps each client's protocol stable while letting you choose free, paid, or local models through the same proxy and Admin UI.
 
-[Quick Start](#quick-start) · [Providers](#choose-a-provider) · [Clients](#connect-your-client) · [Integrations](#optional-integrations) · [Development](#development) · [Ollama Windows Guide](OLLAMA_WINDOWS_SETUP.md) · [Claude Code Agents Tutorial](CLAUDE_CODE_AGENTS_TUTORIAL.md)
+[OpenClaw Quick Start](#openclaw-integration) · [Proxy Quick Start](#quick-start) · [Providers](#choose-a-provider) · [Clients](#connect-your-client) · [Integrations](#optional-integrations) · [Development](#development) · [Ollama Windows Guide](OLLAMA_WINDOWS_SETUP.md) · [Claude Code Agents Tutorial](CLAUDE_CODE_AGENTS_TUTORIAL.md)
 
 </div>
 
