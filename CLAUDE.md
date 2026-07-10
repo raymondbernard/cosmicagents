@@ -69,6 +69,19 @@ PORT=8082
 
 > **Note:** Each entry in `models` must be an object with at minimum `id` (string) and `name` (string). Plain strings are not valid.
 
+### Model / Agent Selection
+
+The **free-claude proxy decides which model to use** — OpenClaw (and Claude Code / Codex) simply send whatever model name they were configured with and the proxy routes it to the backend defined in `~/.fcc/.env`.
+
+| `~/.fcc/.env` key | Controls |
+|-------------------|----------|
+| `MODEL` | Default route — all Claude model names that don't match a tier override |
+| `MODEL_OPUS` | Route for Opus-tier requests only |
+| `MODEL_SONNET` | Route for Sonnet-tier requests only |
+| `MODEL_HAIKU` | Route for Haiku-tier requests only |
+
+To swap the underlying agent/model, change only `MODEL` (or a tier key) in `~/.fcc/.env` and restart `fcc-server`. No changes to OpenClaw config or Claude Code config are needed. The Admin UI at `http://127.0.0.1:8082/admin` lets you do this live without editing the file by hand.
+
 ### Starting the Stack
 
 ```powershell
